@@ -3,6 +3,7 @@ package im.knot.snet;
 import javax.net.ssl.SSLSocketFactory;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -35,7 +36,6 @@ public class ClientConnection extends Connection {
         if (socket.isClosed()) {
             try {
                 socket = createSocket(address, port);
-                SReader reader = new SReader(socket.getInputStream());
 
                 registry = createRegistry();
 
@@ -53,9 +53,10 @@ public class ClientConnection extends Connection {
 
     private static Socket createSocket(InetAddress addr, int port) throws IOException {
 //        Socket socket = SSLSocketFactory.getDefault().createSocket(addr, port);
-        Socket socket = new Socket(addr, port);
+        Socket socket = new Socket();
         socket.setKeepAlive(true);
         socket.setSoTimeout(5000);
+        socket.connect(new InetSocketAddress(addr, port));
         return socket;
     }
 }

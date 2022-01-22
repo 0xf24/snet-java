@@ -13,60 +13,53 @@ public class SReader {
         this.stream = stream;
     }
 
-    public byte[] get(int size) {
+    public byte[] get(int size) throws IOException {
         byte[] bytes = new byte[size];
 
-        try {
-            stream.read(bytes);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        //should this be replaced?
+        stream.read(bytes, 0, size);
 
         return bytes;
     }
 
-    public long getLong() {
+    public long getLong() throws IOException {
         long v = 0;
 
-        try {
-            v = ((long) stream.read())      ;
-            v = ((long) stream.read()) <<  8;
-            v = ((long) stream.read()) << 16;
-            v = ((long) stream.read()) << 24;
-            v = ((long) stream.read()) << 32;
-            v = ((long) stream.read()) << 40;
-            v = ((long) stream.read()) << 48;
-            v = ((long) stream.read()) << 56;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        v |= ((long) stream.read())      ;
+        v |= ((long) stream.read()) <<  8;
+        v |= ((long) stream.read()) << 16;
+        v |= ((long) stream.read()) << 24;
+        v |= ((long) stream.read()) << 32;
+        v |= ((long) stream.read()) << 40;
+        v |= ((long) stream.read()) << 48;
+        v |= ((long) stream.read()) << 56;
 
         return v;
     }
 
-    public int getInt() {
+    public int getInt() throws IOException {
         int v = 0;
 
-        try {
-            v = stream.read()      ;
-            v = stream.read() <<  8;
-            v = stream.read() << 16;
-            v = stream.read() << 24;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        v |= stream.read()      ;
+        v |= stream.read() <<  8;
+        v |= stream.read() << 16;
+        v |= stream.read() << 24;
 
         return v;
+    }
+
+    public long getUInt() throws IOException {
+        return ((long)getInt()) & 0xFFFF_FFFF;
     }
 
     public short getShort() {
         short v = 0;
 
         try {
-            v = (short) (stream.read()     );
-            v = (short) (stream.read() << 8);
+            v  = (short) (stream.read()     );
+            v |= (short) (stream.read() << 8);
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
 
         return v;
@@ -82,7 +75,7 @@ public class SReader {
         try {
             v = (byte) (stream.read() & 0xff);
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
 
         return v;
@@ -92,11 +85,11 @@ public class SReader {
         return getByte() & 0xff;
     }
 
-    public double getDouble() {
+    public double getDouble() throws IOException {
         return Double.longBitsToDouble(getLong());
     }
 
-    public float getFloat() {
+    public float getFloat() throws IOException {
         return Float.intBitsToFloat(getInt());
     }
 
@@ -110,7 +103,7 @@ public class SReader {
 
             return new String(raw, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
 
         return "";

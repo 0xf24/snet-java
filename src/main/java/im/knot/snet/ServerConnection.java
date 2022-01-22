@@ -16,14 +16,24 @@ public class ServerConnection extends Connection {
         socket.setSoTimeout(5000);
 
         //bad code. please replace
-        Thread thread = new Thread(() -> {
-
-        }, "snet_con");
+        new Thread(this::startListening, "snet_con").start();
     }
 
     @Override
     protected PacketRegistry createRegistry() {
         return PacketRegistry.SERVER;
+    }
+
+    @Override
+    protected void startListening() {
+        try {
+            PacketRegistry.send(69, 420, new SWriter(socket.getOutputStream()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        super.startListening();
     }
 
     @Override

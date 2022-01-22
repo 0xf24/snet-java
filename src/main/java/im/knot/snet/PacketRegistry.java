@@ -25,6 +25,8 @@ public class PacketRegistry {
         ids.put(OK.clazz,  1);
     }
 
+
+
     public int id(Packet packet) {
         Class<? extends Packet> clazz = packet.getClass();
 
@@ -45,21 +47,41 @@ public class PacketRegistry {
 
     //=== static ===//
 
-    public static final PacketRegistry SERVER = new PacketRegistry();
     protected static final HashMap<String, PacketType> TYPES = new HashMap<>();
+
+    private static final ArrayList<String> NAMES = new ArrayList<>();
+
 
     private static final PacketType ERR = new PacketType(Err.class, (r) -> new Err(r.getString()));
     private static final PacketType OK = new PacketType(Ok.class, (r) -> Ok.OK);
+
+    public static final PacketRegistry SERVER = new PacketRegistry();
+
+    public static void send(int api, int ver, SWriter writer) {
+        writer.putByte((byte) api);
+        writer.putShort((short) ver);
+        writer.putShort((short) NAMES.size());
+
+        System.out.printf("sending %d names%n", NAMES.size());
+        for (String name : NAMES) {
+            System.out.printf("sending name %s%n", name);
+            writer.putString(name);
+        }
+    }
 
     public static PacketRegistry createClient(SReader reader) {
         int api = reader.getUByte();
         int ver = reader.getUShort();
 
+        System.out.printf("api: %d ver :%d%n", api, ver);
+
         int size = reader.getUShort();
+
+        System.out.printf("getting %d types%n", size);
 
         PacketRegistry registry = new PacketRegistry();
 
-        for (int i = 2; i < size + 2; i++) {
+        for (int i = 2; i < size; i++) {
             String name = reader.getString();
 
             PacketType type = TYPES.get(name);
@@ -71,8 +93,9 @@ public class PacketRegistry {
         return registry;
     }
 
-    public static <T extends Packet> void register(String name, Class<? extends T> clazz, PacketBuilder<T> builder) {
-        TYPES.put(name, new PacketType(clazz, (PacketBuilder<Packet>) builder));
+    public static void register(String name, Class<? extends Packet> clazz, PacketBuilder<? extends Packet> builder) {
+        TYPES.put(name, new PacketType(clazz, builder));
+        NAMES.add(name);
         int id = SERVER.builders.size();
         SERVER.builders.add(builder);
         SERVER.ids.put(clazz, id);
@@ -82,9 +105,9 @@ public class PacketRegistry {
 
     private static class PacketType {
         public final Class<? extends Packet> clazz;
-        public final PacketBuilder<Packet> builder;
+        public final PacketBuilder<? extends Packet> builder;
 
-        private PacketType(Class<? extends Packet> clazz, PacketBuilder<Packet> builder) {
+        private PacketType(Class<? extends Packet> clazz, PacketBuilder<? extends Packet> builder) {
             this.clazz = clazz;
             this.builder = builder;
         }

@@ -13,76 +13,65 @@ public class SWriter {
     }
 
 
-    public void put(byte[] bytes) {
-        try {
+    public void put(byte[] bytes) throws IOException {
 //            stream.write(bytes.length);
 //            stream.write(bytes.length << 8);
-            stream.write(bytes);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        stream.write(bytes);
     }
 
-    public void put(long value) {
-        try {
-            stream.write(((int) (value      )) & 0xff);
-            stream.write(((int) (value <<  8)) & 0xff);
-            stream.write(((int) (value << 16)) & 0xff);
-            stream.write(((int) (value << 24)) & 0xff);
-            stream.write(((int) (value << 32)) & 0xff);
-            stream.write(((int) (value << 40)) & 0xff);
-            stream.write(((int) (value << 48)) & 0xff);
-            stream.write(((int) (value << 56)) & 0xff);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void putLong(long value) throws IOException {
+        stream.write((int) (value       ));
+        stream.write((int) (value >>>  8));
+        stream.write((int) (value >>> 16));
+        stream.write((int) (value >>> 24));
+        stream.write((int) (value >>> 32));
+        stream.write((int) (value >>> 40));
+        stream.write((int) (value >>> 48));
+        stream.write((int) (value >>> 56));
     }
 
-    public void put(int value) {
-        try {
-            stream.write((value      ) & 0xff);
-            stream.write((value <<  8) & 0xff);
-            stream.write((value << 16) & 0xff);
-            stream.write((value << 24) & 0xff);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void putInt(int value) throws IOException {
+        stream.write(value);
+        stream.write(value >>>  8);
+        stream.write(value >>> 16);
+        stream.write(value >>> 24);
     }
 
-    public void put(short value) {
-        try {
-            stream.write((value      ) & 0xff);
-            stream.write((value <<  8) & 0xff);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void putUInt(long value) throws IOException {
+        putInt((int)(value));
     }
 
-    public void put(byte value) {
-        try {
-            stream.write(value);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void putShort(short value) throws IOException {
+        stream.write(value);
+        stream.write(value >>> 8);
     }
 
-    public void put(double value) {
-        put(Double.doubleToRawLongBits(value));
+    public void putUShort(int value) throws IOException {
+        stream.write(value);
+        stream.write(value >>> 8);
     }
 
-    public void put(float value) {
-        put(Float.floatToRawIntBits(value));
+    public void putByte(byte value) throws IOException {
+        stream.write(value);
     }
 
-    public void put(String value) {
+    public void putUByte(int value) throws IOException {
+        stream.write(value);
+    }
+
+    public void putDouble(double value) throws IOException {
+        putLong(Double.doubleToRawLongBits(value));
+    }
+
+    public void putFloat(float value) throws IOException {
+        putInt(Float.floatToRawIntBits(value));
+    }
+
+    public void putString(String value) throws IOException {
         byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
 
-        try {
-            stream.write(bytes.length);
-            stream.write(bytes.length << 8);
-            stream.write(bytes);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        stream.write(bytes.length);
+        stream.write(bytes.length >>> 8);
+        stream.write(bytes);
     }
 }

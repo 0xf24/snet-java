@@ -17,8 +17,13 @@ public class Err implements Packet {
 
     @Override
     public void write(SWriter writer) {
-        writer.put(msg);
+        writer.putString(msg);
     }
 
     public static Err ERR = new Err();
+
+    @Override
+    public String toString() {
+        return "[Err] " + msg;
+    }
 }

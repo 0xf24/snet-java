@@ -12,9 +12,15 @@ public class Server {
     private final ServerSocket socket;
 
     public Server(int port, Consumer<Connection> consumer) throws IOException {
+        this(port, consumer, 0, 0);
+    }
+
+    public Server(int port, Consumer<Connection> consumer, int api, int ver) throws IOException {
         this.port = port;
 
         socket = new ServerSocket(port);
+
+        socket.setSoTimeout(5000);
 
         new Thread(() -> {
             while (true) {
@@ -26,7 +32,8 @@ public class Server {
                     consumer.accept(con);
 
                 } catch (IOException e) {
-                    e.printStackTrace();
+//                    System.out.println("caught server IO exception");
+//                    e.printStackTrace();
                 }
             }
         }, "snet_server").start();

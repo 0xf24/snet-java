@@ -2,6 +2,7 @@ package im.knot.snet;
 
 import im.knot.snet.payload.Err;
 
+import javax.annotation.Nullable;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -59,14 +60,14 @@ public abstract class Connection {
         try {
             SWriter output = new SWriter(socket.getOutputStream());
 
-            output.put((short) registry.id(packet));
-            output.put(tid);
+            output.putShort((short) registry.id(packet));
+            output.putLong(tid);
 
             try(ByteArrayOutputStream bas = new ByteArrayOutputStream()) {
                 SWriter writer = new SWriter(bas);
                 packet.write(writer);
 
-                output.put((short) bas.size());
+                output.putShort((short) bas.size());
                 output.put(bas.toByteArray());
 
                 CompletableFuture<Packet> future = new CompletableFuture<>();
@@ -116,7 +117,8 @@ public abstract class Connection {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            //ignored? for now
+//            e.printStackTrace();
         }
     }
 
@@ -139,16 +141,20 @@ public abstract class Connection {
      */
     private void dispatch(long tid, Packet p) {
         for (ConnectionListener listener : listeners) {
-            listener.accept(p).thenAccept(r -> {
-                if (r != null) {
-                    send(tid, r);
-                }
-            });
+            CompletableFuture<Packet> future = listener.accept(p);
+            if (future != null) {
+                future.thenAccept(r -> {
+                    if (r != null) {
+                        send(tid, r);
+                    }
+                });
+            }
         }
     }
 
     @FunctionalInterface
     public interface ConnectionListener {
+        @Nullable
         CompletableFuture<Packet> accept(Packet p);
     }
 }
